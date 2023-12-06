@@ -66,6 +66,17 @@ export type ServiceMethodDefinition = {
     src: string;
 };
 
+// Recursive
+export type RecursiveCandidDefinition = {
+    candidMeta: CandidMeta;
+    name: string;
+};
+export type RecursiveGlobalDefinition = {
+    candidMeta: CandidMeta;
+    name: string;
+    innerType: CandidDefinition;
+};
+
 type CandidMeta = {
     candidTypeAnnotation: string; // Either a type reference or type literal
     candidTypeObject: string;
