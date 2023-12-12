@@ -2,14 +2,16 @@ import fc from 'fast-check';
 import { UniqueIdentifierArb } from '../../unique_identifier_arb';
 import {
     CandidDefinition,
-    CandidDefinitionArb,
+    RecCandidDefMemo,
     RecursiveCandidDefinition,
     RecursiveGlobalDefinition
 } from '../candid_definition_arb/types';
-import { recursiveOptions, recursiveShapes } from '.';
+import { recursive } from '.';
 
 export function RecursiveDefinitionArb(
-    candidTypeArbForInnerType: CandidDefinitionArb
+    candidTypeArbForInnerType: RecCandidDefMemo,
+    parents: RecursiveCandidDefinition[],
+    n: number
 ): fc.Arbitrary<RecursiveGlobalDefinition> {
     return UniqueIdentifierArb('typeDeclaration')
         .chain((name): fc.Arbitrary<RecursiveCandidDefinition> => {
@@ -23,45 +25,50 @@ export function RecursiveDefinitionArb(
                 },
                 name
             };
-            recursiveOptions.push(recCanDef);
             return fc.constant(recCanDef);
         })
         .chain((innerRecDef) => {
             return fc.tuple(
-                candidTypeArbForInnerType,
+                candidTypeArbForInnerType([innerRecDef, ...parents], {
+                    blob: 0,
+                    tuple: 0,
+                    vec: 0
+                    // TODO there are a lot of bugs with recursion so we are disabling the problematic types until the issues are resolved
+                    // https://github.com/demergent-labs/azle/issues/1518
+                    // https://github.com/demergent-labs/azle/issues/1513
+                    // https://github.com/demergent-labs/azle/issues/1525
+                })(n),
                 fc.constant(innerRecDef)
             );
         })
-        .map(
-            ([
-                innerType,
-                {
-                    name,
-                    candidMeta: { candidTypeObject, candidTypeAnnotation }
-                }
-            ]) => {
-                const variableAliasDeclarations =
-                    generateVariableAliasDeclarations(name, innerType);
+        .map(([innerType, recCanDef]) => {
+            const {
+                name,
+                candidMeta: { candidTypeObject, candidTypeAnnotation }
+            } = recCanDef;
+            const variableAliasDeclarations = generateVariableAliasDeclarations(
+                name,
+                innerType
+            );
 
-                const imports = generateImports(innerType);
+            const imports = generateImports(innerType);
 
-                const shape: RecursiveGlobalDefinition = {
-                    candidMeta: {
-                        candidTypeObject,
-                        candidTypeAnnotation,
-                        variableAliasDeclarations,
-                        imports,
-                        candidType: 'Recursive'
-                    },
-                    name,
-                    innerType
-                };
+            const shape: RecursiveGlobalDefinition = {
+                candidMeta: {
+                    candidTypeObject,
+                    candidTypeAnnotation,
+                    variableAliasDeclarations,
+                    imports,
+                    candidType: 'Recursive'
+                },
+                name,
+                innerType
+            };
 
-                recursiveShapes[name] = shape;
+            recursive.shapes[name] = shape;
 
-                return shape;
-            }
-        );
+            return shape;
+        });
 }
 
 function generateVariableAliasDeclarations(
@@ -69,8 +76,8 @@ function generateVariableAliasDeclarations(
     innerType: CandidDefinition
 ): string[] {
     return [
-        ...innerType.candidMeta.variableAliasDeclarations,
-        `const ${name} = Recursive(() => ${innerType.candidMeta.candidTypeObject});`
+        `const ${name} = Recursive(() => ${innerType.candidMeta.candidTypeObject});`,
+        ...innerType.candidMeta.variableAliasDeclarations
     ];
 }
 

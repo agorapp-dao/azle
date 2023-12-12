@@ -1,5 +1,26 @@
 import fc from 'fast-check';
 import { CandidType } from '../candid_type';
+import { PrimitiveDefinitionWeights } from './simple_candid_definition_arb';
+import { ComplexDefinitionWeights } from './complex_candid_definition_memo';
+
+export type CandidDefinitionMemo = (n: number) => CandidDefinitionArb;
+export type RecCandidDefMemo = (
+    parents: RecursiveCandidDefinition[],
+    constraints?: ComplexDefinitionWeights
+) => CandidDefinitionMemo;
+
+export type DefinitionConstraints = {
+    n: number;
+    recursive_weights: boolean;
+    weights: CandidDefinitionWeights;
+};
+
+export type CandidDefinitionWeights = Partial<
+    Record<
+        keyof ComplexDefinitionWeights | keyof PrimitiveDefinitionWeights,
+        number
+    >
+>;
 
 export type CandidDefinitionArb = fc.Arbitrary<CandidDefinition>;
 

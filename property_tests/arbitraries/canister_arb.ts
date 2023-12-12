@@ -89,7 +89,9 @@ function generateSourceCode(
         // @ts-ignore
         import deepEqual from 'deep-is';
 
+        // #region Declarations
         ${declarations}
+        // #endregion Declarations
 
         export default Canister({
             ${sourceCodes.join(',\n    ')}
