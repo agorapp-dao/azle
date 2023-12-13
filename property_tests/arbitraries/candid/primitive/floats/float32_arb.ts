@@ -19,5 +19,10 @@ export function Float32DefinitionArb(): fc.Arbitrary<FloatCandidDefinition> {
 }
 
 export function Float32ValueArb(): fc.Arbitrary<CandidValues<number>> {
-    return SimpleCandidValuesArb(fc.float(), floatToSrcLiteral);
+    return SimpleCandidValuesArb(
+        fc
+            .float32Array({ maxLength: 1, minLength: 1 })
+            .map((sample) => sample[0]),
+        floatToSrcLiteral
+    );
 }
