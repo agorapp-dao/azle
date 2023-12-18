@@ -5,6 +5,7 @@ import { CorrespondingJSType } from './candid/corresponding_js_type';
 import { InitMethod } from './canister_methods/init_method_arb';
 import { PostUpgradeMethod } from './canister_methods/post_upgrade_arb';
 import { UpdateMethod } from './canister_methods/update_method_arb';
+import { PreUpgradeMethod } from './canister_methods/pre_upgrade_method_arb';
 
 export type Canister = {
     deployArgs: string[] | undefined;
@@ -19,7 +20,8 @@ export type CanisterMethod<
     | QueryMethod
     | UpdateMethod
     | InitMethod<ParamAgentArgumentValue, ParamAgentResponseValue>
-    | PostUpgradeMethod<ParamAgentArgumentValue, ParamAgentResponseValue>;
+    | PostUpgradeMethod<ParamAgentArgumentValue, ParamAgentResponseValue>
+    | PreUpgradeMethod;
 
 export type CanisterConfig<
     ParamAgentArgumentValue extends CorrespondingJSType = undefined,
@@ -31,6 +33,7 @@ export type CanisterConfig<
         ParamAgentArgumentValue,
         ParamAgentResponseValue
     >;
+    preUpgradeMethod?: PreUpgradeMethod;
     queryMethods?: QueryMethod[];
     updateMethods?: UpdateMethod[];
 };
@@ -51,6 +54,7 @@ export function CanisterArb<
         >[] = [
             ...(config.initMethod ? [config.initMethod] : []),
             ...(config.postUpgradeMethod ? [config.postUpgradeMethod] : []),
+            ...(config.preUpgradeMethod ? [config.preUpgradeMethod] : []),
             ...(config.queryMethods ?? []),
             ...(config.updateMethods ?? [])
         ];

@@ -135,6 +135,7 @@ jobs:
                     "property_tests/tests/bool",
                     "property_tests/tests/canister_methods/init",
                     "property_tests/tests/canister_methods/post_upgrade",
+                    "property_tests/tests/canister_methods/pre_upgrade",
                     "property_tests/tests/canister_methods/query",
                     "property_tests/tests/canister_methods/update",
                     "property_tests/tests/float32",
