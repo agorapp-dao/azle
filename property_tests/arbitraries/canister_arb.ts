@@ -6,6 +6,7 @@ import { InitMethod } from './canister_methods/init_method_arb';
 import { PostUpgradeMethod } from './canister_methods/post_upgrade_arb';
 import { UpdateMethod } from './canister_methods/update_method_arb';
 import { PreUpgradeMethod } from './canister_methods/pre_upgrade_method_arb';
+import { InspectMessageMethod } from './canister_methods/inspect_message_method_arb';
 
 export type Canister = {
     deployArgs: string[] | undefined;
@@ -21,7 +22,8 @@ export type CanisterMethod<
     | UpdateMethod
     | InitMethod<ParamAgentArgumentValue, ParamAgentResponseValue>
     | PostUpgradeMethod<ParamAgentArgumentValue, ParamAgentResponseValue>
-    | PreUpgradeMethod;
+    | PreUpgradeMethod
+    | InspectMessageMethod;
 
 export type CanisterConfig<
     ParamAgentArgumentValue extends CorrespondingJSType = undefined,
@@ -29,6 +31,7 @@ export type CanisterConfig<
 > = {
     globalDeclarations?: string[];
     initMethod?: InitMethod<ParamAgentArgumentValue, ParamAgentResponseValue>;
+    inspectMessageMethod?: InspectMessageMethod;
     postUpgradeMethod?: PostUpgradeMethod<
         ParamAgentArgumentValue,
         ParamAgentResponseValue
@@ -53,6 +56,9 @@ export function CanisterArb<
             ParamAgentResponseValue
         >[] = [
             ...(config.initMethod ? [config.initMethod] : []),
+            ...(config.inspectMessageMethod
+                ? [config.inspectMessageMethod]
+                : []),
             ...(config.postUpgradeMethod ? [config.postUpgradeMethod] : []),
             ...(config.preUpgradeMethod ? [config.preUpgradeMethod] : []),
             ...(config.queryMethods ?? []),
@@ -137,7 +143,7 @@ function generateSourceCode(
 
     return /*TS*/ `
         import { ${imports} } from 'azle';
-        
+
         // @ts-ignore
         import deepEqual from 'deep-is';
 
