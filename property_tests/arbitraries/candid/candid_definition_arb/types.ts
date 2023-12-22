@@ -5,7 +5,7 @@ import { ComplexDefinitionWeights } from './complex_candid_definition_memo';
 
 export type CandidDefinitionMemo = (n: number) => CandidDefinitionArb;
 export type RecursiveCandidDefinitionMemo = (
-    parents: RecursiveCandidDefinition[],
+    parents: RecursiveCandidName[],
     constraints?: DefinitionConstraints
 ) => CandidDefinitionMemo;
 
@@ -88,11 +88,11 @@ export type ServiceMethodDefinition = {
 };
 
 // Recursive
-export type RecursiveCandidDefinition = {
+export type RecursiveCandidName = {
     candidMeta: CandidMeta;
     name: string;
 };
-export type RecursiveGlobalDefinition = {
+export type RecursiveCandidDefinition = {
     candidMeta: CandidMeta;
     name: string;
     innerType: CandidDefinition;

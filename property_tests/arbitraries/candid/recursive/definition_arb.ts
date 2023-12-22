@@ -4,19 +4,19 @@ import {
     CandidDefinition,
     DefinitionConstraints,
     RecursiveCandidDefinitionMemo,
-    RecursiveCandidDefinition,
-    RecursiveGlobalDefinition
+    RecursiveCandidName,
+    RecursiveCandidDefinition
 } from '../candid_definition_arb/types';
 import { recursive } from '.';
 
 export function RecursiveDefinitionArb(
     candidTypeArbForInnerType: RecursiveCandidDefinitionMemo,
-    parents: RecursiveCandidDefinition[],
+    parents: RecursiveCandidName[],
     constraints: DefinitionConstraints
-): fc.Arbitrary<RecursiveGlobalDefinition> {
+): fc.Arbitrary<RecursiveCandidDefinition> {
     return UniqueIdentifierArb('typeDeclaration')
-        .chain((name): fc.Arbitrary<RecursiveCandidDefinition> => {
-            const recCanDef: RecursiveCandidDefinition = {
+        .chain((name): fc.Arbitrary<RecursiveCandidName> => {
+            const recCanDef: RecursiveCandidName = {
                 candidMeta: {
                     candidType: 'Recursive',
                     candidTypeObject: name,
@@ -57,7 +57,7 @@ export function RecursiveDefinitionArb(
 
             const imports = generateImports(innerType);
 
-            const shape: RecursiveGlobalDefinition = {
+            const shape: RecursiveCandidDefinition = {
                 candidMeta: {
                     candidTypeObject,
                     candidTypeAnnotation,

@@ -4,13 +4,13 @@ import {
     CandidDefinition,
     DefinitionConstraints,
     RecursiveCandidDefinitionMemo,
-    RecursiveCandidDefinition,
+    RecursiveCandidName,
     VecCandidDefinition
 } from '../../candid_definition_arb/types';
 
 export function VecDefinitionArb(
     candidTypeArb: RecursiveCandidDefinitionMemo,
-    parents: RecursiveCandidDefinition[],
+    parents: RecursiveCandidName[],
     constraints: DefinitionConstraints
 ): fc.Arbitrary<VecCandidDefinition> {
     return fc
@@ -55,7 +55,7 @@ export function VecDefinitionArb(
 
 function possiblyRecursiveArb(
     candidArb: RecursiveCandidDefinitionMemo,
-    parents: RecursiveCandidDefinition[],
+    parents: RecursiveCandidName[],
     constraints: DefinitionConstraints
 ): fc.Arbitrary<CandidDefinition> {
     const n = constraints.n ?? 0;
