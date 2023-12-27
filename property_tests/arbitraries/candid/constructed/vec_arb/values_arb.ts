@@ -1,4 +1,4 @@
-import fc from 'fast-check';
+import fc, { ArrayConstraints } from 'fast-check';
 import { Vec } from '.';
 import { CandidType } from '../../candid_type';
 import { CorrespondingJSType } from '../../corresponding_js_type';
@@ -12,6 +12,19 @@ import {
 } from '../../candid_definition_arb/types';
 import { CandidValues, CandidValueArb } from '../../candid_values_arb';
 
+/*
+From Candid Spec:
+Since null, reserved, record {}, and records of such values, take no space, to
+prevent unbounded sized message, we limit the total vector length of such
+zero-sized values in a messagev (on the wire) to be 2,000,000 elements. For
+example, if a message contains two vectors, one at type vec null and one at type
+vec record {}, then the length of both vectors combined cannot exceed 2,000,000
+elements.
+const NULL_VEC_SIZE_LIMIT = 2_000_000;
+*/
+// chenyen explained that on the canister side this limit is set to zero
+const EMPTYISH_VEC_SIZE_LIMIT = 0;
+
 export function VecValuesArb(
     vecDefinition: VecCandidDefinition,
     n: number
@@ -21,14 +34,9 @@ export function VecValuesArb(
             generateEmptyVec(vecDefinition.innerType.candidMeta.candidType)
         );
     }
-    if (isEmptyInnerType(vecDefinition.innerType)) {
-        return fc.constant(
-            generateEmptyVec(vecDefinition.innerType.candidMeta.candidType)
-        );
-    }
     const arbitraryMemberValues = fc
         .tuple(
-            fc.array(fc.constant(null)),
+            fc.array(fc.constant(null), determineVecConstraints(vecDefinition)),
             fc.constant(vecDefinition.innerType)
         )
         .chain(([arrayTemplate, innerType]) =>
@@ -53,6 +61,15 @@ export function VecValuesArb(
             agentResponseValue
         };
     });
+}
+
+function determineVecConstraints(
+    vecDefinition: VecCandidDefinition
+): ArrayConstraints | undefined {
+    if (isEmptyInnerType(vecDefinition.innerType)) {
+        return { maxLength: EMPTYISH_VEC_SIZE_LIMIT };
+    }
+    return;
 }
 
 function generateEmptyVec(innerCandidType: CandidType): CandidValues<Vec> {
