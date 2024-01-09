@@ -5,6 +5,7 @@
     "dfx_version": "0.15.1",
     "description": "TypeScript and JavaScript CDK for the Internet Computer",
     "scripts": {
+        "build": "rm -rf dist && tsc || true && mv dist/src/compiler dist/ && mv dist/src/lib dist/ && rm -rf dist/src dist/package.json",
         "typecheck": "tsc --noEmit",
         "prepare": "husky install",
         "test": "test/test.sh"
@@ -12,7 +13,7 @@
     "bin": {
         "azle": "./bin.js"
     },
-    "main": "./src/lib/index.ts",
+    "main": "dist/lib/index.js",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/demergent-labs/azle.git"

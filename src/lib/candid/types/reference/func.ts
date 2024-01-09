@@ -7,7 +7,7 @@ import { Serializable } from '../../../stable_structures/stable_b_tree_map';
 
 type Mode = 'query' | 'update' | 'oneway';
 
-const modeToCandid = {
+const modeToCandid: Record<Mode, string[]> = {
     query: ['query'],
     oneway: ['oneway'],
     update: []

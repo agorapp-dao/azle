@@ -63,7 +63,7 @@ async function azle() {
 
             installRustDependencies(azleVersion, rustVersion);
 
-            const compilationResult = compileTypeScriptToJavaScript(
+            const compilationResult = await compileTypeScriptToJavaScript(
                 canisterConfig.main,
                 canisterConfig
             );
@@ -132,7 +132,7 @@ async function azle() {
             // TODO why not just write the dfx.json file here as well?
             writeFileSync(compilerInfoPath, JSON.stringify(compilerInfo));
 
-            compileRustCode(canisterName, canisterPath, stdioType);
+            await compileRustCode(canisterName, canisterPath, stdioType);
         }
     );
 

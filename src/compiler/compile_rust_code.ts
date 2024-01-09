@@ -1,19 +1,42 @@
-import { execSync, IOType } from 'child_process';
+import { IOType } from 'child_process';
+import { join, basename } from 'path';
+import { copy } from 'fs-extra';
 import {
     GLOBAL_AZLE_RUST_DIR,
     GLOBAL_AZLE_RUST_BIN_DIR,
     GLOBAL_AZLE_TARGET_DIR,
     time
 } from './utils';
+import { exec } from './utils/exec';
 
-export function compileRustCode(
+export async function compileRustCode(
     canisterName: string,
     canisterPath: string,
-    stdio: IOType
+    stdio: IOType,
+    cargoFlags?: { release?: boolean; offline?: boolean }
 ) {
-    execSync(
-        `cd ${canisterPath} && ${GLOBAL_AZLE_RUST_BIN_DIR}/cargo build --target wasm32-wasi --manifest-path canister/Cargo.toml --release`,
+    cargoFlags = {
+        release: true,
+        offline: false,
+        ...cargoFlags
+    };
+
+    const flags = Object.keys(cargoFlags)
+        .filter((flag) => cargoFlags?.[flag as keyof typeof cargoFlags])
+        .map((flag) => '--' + flag);
+
+    await exec(
+        `${GLOBAL_AZLE_RUST_BIN_DIR}/cargo`,
+        [
+            `build`,
+            `--target`,
+            `wasm32-wasi`,
+            `--manifest-path`,
+            `canister/Cargo.toml`,
+            ...flags
+        ],
         {
+            cwd: canisterPath,
             stdio,
             env: {
                 ...process.env,
@@ -27,13 +50,20 @@ export function compileRustCode(
         }
     );
 
-    const wasmTargetFilePath = `${GLOBAL_AZLE_TARGET_DIR}/wasm32-wasi/release/canister.wasm`;
+    const wasmTargetFilePath = `${GLOBAL_AZLE_TARGET_DIR}/wasm32-wasi/${
+        cargoFlags.release ? 'release' : 'debug'
+    }/canister.wasm`;
 
-    execSync(`cp ${wasmTargetFilePath} ${canisterPath}`);
+    await copy(
+        wasmTargetFilePath,
+        join(canisterPath, basename(wasmTargetFilePath))
+    );
 
-    execSync(
-        `cd ${canisterPath} && ${GLOBAL_AZLE_RUST_BIN_DIR}/wasi2ic canister.wasm ${canisterName}.wasm`,
+    await exec(
+        `${GLOBAL_AZLE_RUST_BIN_DIR}/wasi2ic`,
+        [`canister.wasm`, `${canisterName}.wasm`],
         {
+            cwd: canisterPath,
             stdio,
             env: {
                 ...process.env,

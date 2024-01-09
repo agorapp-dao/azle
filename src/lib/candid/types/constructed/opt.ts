@@ -22,7 +22,7 @@ export function Some<T>(value: T) {
 }
 
 /** An {@link Opt} representing the absence of a value */
-export const None = { None: null };
+export const None: { None: null } = { None: null };
 
 // TODO what happens if we pass something to Opt() that can't be converted to CandidClass?
 export function Opt<T extends CandidType>(t: T) {

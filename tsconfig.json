@@ -1,12 +1,16 @@
 {
     "compilerOptions": {
+        "baseUrl": "src",
         "strict": true,
         "target": "ES2020",
         "moduleResolution": "node",
+        "module": "commonjs",
         "allowJs": true,
-        "outDir": "HACK_BECAUSE_OF_ALLOW_JS",
+        "outDir": "dist",
         "resolveJsonModule": true,
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "declaration": true
     },
-    "exclude": ["examples/new"]
+    "include": ["src/**/*.ts"],
+    "exclude": ["examples", "type_tests", "dist"]
 }
