@@ -35,8 +35,8 @@ globalThis._azleGuardFunctions = {};
 
 // TODO be careful we are using a random seed of 0 I think
 // TODO the randomness is predictable
-globalThis.crypto = {
-    ...globalThis.crypto,
+(globalThis as any).crypto = {
+    ...(globalThis as any).crypto,
     getRandomValues: (() => {
         let array = new Uint8Array(32);
 

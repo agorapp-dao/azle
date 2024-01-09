@@ -1,12 +1,12 @@
 import * as swc from '@swc/core';
-import { buildSync } from 'esbuild';
+import { build } from 'esbuild';
 import { JSCanisterConfig, JavaScript, TypeScript } from './utils/types';
 import { Result } from './utils/result';
 
-export function compileTypeScriptToJavaScript(
+export async function compileTypeScriptToJavaScript(
     main: string,
     canisterConfig: JSCanisterConfig
-): Result<JavaScript, unknown> {
+): Promise<Result<JavaScript, unknown>> {
     try {
         const globalThisProcess = `
             globalThis.process = {
@@ -33,7 +33,7 @@ export function compileTypeScriptToJavaScript(
 
         `;
 
-        const bundledJavaScript = bundleAndTranspileJs(`
+        const bundledJavaScript = await bundleAndTranspileJs(`
             ${globalThisProcess}
             ${imports}
 `);
@@ -46,9 +46,11 @@ export function compileTypeScriptToJavaScript(
     }
 }
 
-export function bundleAndTranspileJs(ts: TypeScript): JavaScript {
-    const jsBundled: JavaScript = bundleFromString(ts);
-    const jsTranspiled: JavaScript = transpile(jsBundled);
+export async function bundleAndTranspileJs(
+    ts: TypeScript
+): Promise<JavaScript> {
+    const jsBundled: JavaScript = await bundleFromString(ts);
+    const jsTranspiled: JavaScript = await transpile(jsBundled);
 
     // TODO enabling strict mode is causing lots of issues
     // TODO it would be nice if I could remove strict mode code in esbuild or swc
@@ -63,9 +65,9 @@ export function bundleAndTranspileJs(ts: TypeScript): JavaScript {
 
 // TODO there is a lot of minification/transpiling etc we could do with esbuild or with swc
 // TODO we need to decide which to use for what
-export function bundleFromString(ts: TypeScript): JavaScript {
+export async function bundleFromString(ts: TypeScript): Promise<JavaScript> {
     // TODO tree-shaking does not seem to work with stdin. I have learned this from sad experience
-    const buildResult = buildSync({
+    const buildResult = await build({
         stdin: {
             contents: ts,
             resolveDir: process.cwd()
@@ -110,8 +112,8 @@ export function bundleFromString(ts: TypeScript): JavaScript {
 
 // TODO there is a lot of minification/transpiling etc we could do with esbuild or with swc
 // TODO we need to decide which to use for what
-function transpile(js: JavaScript): JavaScript {
-    return swc.transformSync(js, {
+async function transpile(js: JavaScript): Promise<JavaScript> {
+    const res = await swc.transform(js, {
         module: {
             type: 'commonjs'
         },
@@ -126,5 +128,6 @@ function transpile(js: JavaScript): JavaScript {
             loose: true
         },
         minify: false // TODO keeping this off for now, enable once the project is more stable
-    }).code;
+    });
+    return res.code;
 }
